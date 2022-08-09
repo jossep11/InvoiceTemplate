@@ -5,9 +5,7 @@ const fs = require("fs");
 const doc = new PDFDocument();
 const { createInvoice } = require("./createInvoice.js");
 let today = new Date();
-console.log(
-  `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`
-);
+
 const invoice = {
   shipping: {
     name: "John Doe",
