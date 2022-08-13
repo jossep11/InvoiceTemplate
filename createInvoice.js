@@ -1,13 +1,35 @@
 const fs = require("fs");
 const PDFDocument = require("pdfkit");
+const { dataArray, ClientNamesR3T, newArray } = require("./usersDebts");
 
 function createInvoice(invoice, path) {
   let doc = new PDFDocument({ size: "A4", margin: 50 });
-  generateHeader(doc);
-  generateCustomerInformation(doc, invoice);
-  generateInvoiceTable(doc, invoice);
-  generateFooter(doc);
-  generateCustomerInformationUnderTable(doc);
+
+  for (let index = 0; index < dataArray.length; index++) {
+    let Clients = newArray.filter(
+      (el) => el.clientid === dataArray[index][0].clientid
+    );
+    let DeudaTotalxClient = Clients.reduce(
+      (a, b) => parseFloat(a) + parseFloat(b.amount_unpaid),
+      0
+    );
+
+    if (index !== 0) {
+      doc.addPage();
+    }
+    generateHeader(doc);
+    generateCustomerInformation(
+      doc,
+      invoice,
+      ClientNamesR3T[index],
+      dataArray[index],
+      DeudaTotalxClient
+    );
+    generateInvoiceTable(doc, invoice, index);
+    generateFooter(doc);
+
+    generateCustomerInformationUnderTable(doc);
+  }
 
   doc.end();
   doc.pipe(fs.createWriteStream(path));
@@ -17,19 +39,31 @@ function generateHeader(doc) {
   doc.image("img_header.png", 50, 45, { width: 550 }).moveDown();
 }
 
-function generateCustomerInformation(doc, invoice) {
-  doc.fillColor("#000000").fontSize(11).text("{Fecha}", 50, 130);
-  doc.fillColor("#000000").fontSize(11).text("{Nombre del cliente}", 50, 150);
+function generateCustomerInformation(
+  doc,
+  invoice,
+  ClientData,
+  dataArray,
+  DeudaTotalxClient
+) {
+  doc.fillColor("#000000").fontSize(11).text(formatDate(), 50, 130);
+  doc.fillColor("#000000").fontSize(11).text(ClientData[0], 50, 150);
   doc
     .fillColor("#000000")
     .fontSize(11)
-    .text("{Dirección Postal del cliente}", 50, 170);
+    .text(
+      `Dirección Postal: ${ClientData[1]}, Ciudad:${ClientData[2]}, Estado:${ClientData[3]}, Zip: ${ClientData[4]}`,
+      50,
+      170
+    );
   doc.fillColor("#000000").fontSize(11).text("Estimado cliente,", 50, 190);
   doc
     .fillColor("#000000")
     .fontSize(11)
     .text(
-      "Nuestro departamento de Finanzas le informa, que su cuenta se encuentra en un atraso de más de 30 días. Su balance pendiente es de $xxxx.xx de lo cual $xxxx.xx se encuentra en atraso.",
+      `Nuestro departamento de Finanzas le informa, que su cuenta se encuentra en un atraso de más de 30 días. Su balance atrasado es de $${DeudaTotalxClient.toFixed(
+        2
+      )}`,
       50,
       205
     )
@@ -38,7 +72,7 @@ function generateCustomerInformation(doc, invoice) {
     .fillColor("#000000")
     .fontSize(11)
     .text(
-      "En varias ocasiones hemos tratado de comunicarnos con usted, pero el esfuerzo ha sido infructuoso. Hoy en día no hemos recibido pagos o acuerdos de su parte.  Por tanto, se solicita que pueda hacer las gestiones de pago del balance en atraso antes mencionado, para en o antes del día {(fecha estipulada)}. De no recibir pago para esta fecha sus servicios permanecerán desconectados."
+      "En varias ocasiones hemos tratado de comunicarnos con usted, pero el esfuerzo ha sido infructuoso. Hoy en día no hemos recibido pagos o acuerdos de su parte.  Por tanto, se solicita que pueda hacer las gestiones de pago del balance en atraso antes mencionado, para en o antes del día 21 del presente mes. De no recibir el pago para esta fecha sus servicios permanecerán desconectados."
     );
 
   // generateHr(doc, 185);
@@ -77,7 +111,7 @@ function generateCustomerInformation(doc, invoice) {
   // generateHr(doc, 252);
 }
 
-function generateInvoiceTable(doc, invoice) {
+function generateInvoiceTable(doc, invoice, index1) {
   let i;
   const invoiceTableTop = 330;
 
@@ -85,14 +119,28 @@ function generateInvoiceTable(doc, invoice) {
   generateTableRow(
     doc,
     invoiceTableTop,
-    "Item",
-    "Description",
-    "Unit Cost",
-    "Quantity",
-    "Line Total"
+    "Invoice Number",
+    "Date Sent",
+    "Amount",
+    "Amount Outstanding"
   );
   generateHr(doc, invoiceTableTop + 20);
   doc.font("Helvetica");
+
+  // dataArray[index1].forEach((element, index2) => {
+  //   const { Invoice, dateSent, amount_unpaid } = element;
+  //   // console.log(amount_unpaid);
+  //   const position = invoiceTableTop + i * 30;
+  //   generateTableRow(
+  //     doc,
+  //     position,
+  //     Invoice,
+  //     dateSent,
+  //     amount_unpaid,
+  //     amount_unpaid
+  //   );
+  //   generateHr(doc, position + 20);
+  // });
 
   for (i = 0; i < invoice.items.length; i++) {
     const item = invoice.items[i];
@@ -110,29 +158,11 @@ function generateInvoiceTable(doc, invoice) {
     generateHr(doc, position + 20);
   }
 
-  const subtotalPosition = invoiceTableTop + (i + 1) * 30;
-  generateTableRow(
-    doc,
-    subtotalPosition,
-    "",
-    "",
-    "Subtotal",
-    "",
-    formatCurrency(invoice.subtotal)
-  );
+  // const subtotalPosition = invoiceTableTop + (i + 1) * 30;
 
-  const paidToDatePosition = subtotalPosition + 20;
-  generateTableRow(
-    doc,
-    paidToDatePosition,
-    "",
-    "",
-    "Paid To Date",
-    "",
-    formatCurrency(invoice.paid)
-  );
+  // const paidToDatePosition = subtotalPosition + 20;
 
-  const duePosition = paidToDatePosition + 25;
+  const duePosition = invoiceTableTop + (i + 1) * 30;
   doc.font("Helvetica-Bold");
   generateTableRow(
     doc,
@@ -182,7 +212,7 @@ function generateTableRow(
   item,
   description,
   unitCost,
-  quantity,
+  // quantity,
   lineTotal
 ) {
   doc
@@ -190,8 +220,8 @@ function generateTableRow(
     .text(item, 50, y)
     .text(description, 150, y)
     .text(unitCost, 280, y, { width: 90, align: "right" })
-    .text(quantity, 370, y, { width: 90, align: "right" })
-    .text(lineTotal, 0, y, { align: "right" });
+    // .text(quantity, 370, y, { width: 90, align: "right" })
+    .text(lineTotal, 0, y, { with: 10, align: "right" });
 }
 
 function generateHr(doc, y) {
@@ -202,11 +232,11 @@ function formatCurrency(cents) {
   return "$" + (cents / 100).toFixed(2);
 }
 
-function formatDate(date) {
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
-  const year = date.getFullYear();
+function formatDate() {
+  const day = new Date().getDate();
+  const month = new Date().getMonth() + 1;
+  const year = new Date().getFullYear();
 
-  return year + "/" + month + "/" + day;
+  return day + "/" + month + "/" + year;
 }
 module.exports = { createInvoice };

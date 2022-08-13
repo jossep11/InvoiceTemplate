@@ -1,11 +1,15 @@
-const express = require("express");
-// const router = require("./routes");
+const usersDebts = require("./usersDebts");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const doc = new PDFDocument();
 const { createInvoice } = require("./createInvoice.js");
 let today = new Date();
-
+// fecha estipulada el dia o antes del 21 de cada mes
+// codigo postal address":"HC 5 Box 5508","city":"Yabucoa","state":"PR","zip":00767
+// data sent
+//  Invoice number
+// Amount
+// Amount outstanding
 const invoice = {
   shipping: {
     name: "John Doe",
@@ -33,5 +37,5 @@ const invoice = {
   paid: 0,
   invoice_nr: 1234,
 };
-
+// console.log(test);
 createInvoice(invoice, "invoice.pdf");
