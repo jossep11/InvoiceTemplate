@@ -4,8 +4,8 @@ const { dataArray, ClientNamesR3T, newArray } = require("./usersDebts");
 
 function createInvoice(invoice, path) {
   let doc = new PDFDocument({ size: "A4", margin: 50 });
-
-  for (let index = 0; index < dataArray.length; index++) {
+  // dataArray.length
+  for (let index = 0; index < 2; index++) {
     let Clients = newArray.filter(
       (el) => el.clientid === dataArray[index][0].clientid
     );
@@ -112,7 +112,7 @@ function generateCustomerInformation(
 }
 
 function generateInvoiceTable(doc, invoice, index1) {
-  let i;
+  let i = 0;
   const invoiceTableTop = 330;
 
   doc.font("Helvetica-Bold");
@@ -127,36 +127,37 @@ function generateInvoiceTable(doc, invoice, index1) {
   generateHr(doc, invoiceTableTop + 20);
   doc.font("Helvetica");
 
-  // dataArray[index1].forEach((element, index2) => {
-  //   const { Invoice, dateSent, amount_unpaid } = element;
-  //   // console.log(amount_unpaid);
-  //   const position = invoiceTableTop + i * 30;
-  //   generateTableRow(
-  //     doc,
-  //     position,
-  //     Invoice,
-  //     dateSent,
-  //     amount_unpaid,
-  //     amount_unpaid
-  //   );
-  //   generateHr(doc, position + 20);
-  // });
-
-  for (i = 0; i < invoice.items.length; i++) {
-    const item = invoice.items[i];
+  dataArray[index1].forEach((element, index2) => {
+    const { Invoice, dateSent, amount_unpaid } = element;
     const position = invoiceTableTop + (i + 1) * 30;
     generateTableRow(
       doc,
       position,
-      item.item,
-      item.description,
-      formatCurrency(item.amount / item.quantity),
-      item.quantity,
-      formatCurrency(item.amount)
+      Invoice,
+      dateSent,
+      amount_unpaid,
+      amount_unpaid
     );
-
     generateHr(doc, position + 20);
-  }
+    i++;
+  });
+
+  console.log(i);
+  // for (i = 0; i < invoice.items.length; i++) {
+  //   const item = invoice.items[i];
+  //   const position = invoiceTableTop + (i + 1) * 30;
+  //   generateTableRow(
+  //     doc,
+  //     position,
+  //     item.item,
+  //     item.description,
+  //     formatCurrency(item.amount / item.quantity),
+  //     item.quantity,
+  //     formatCurrency(item.amount)
+  //   );
+
+  // generateHr(doc, position + 20);
+  // }
 
   // const subtotalPosition = invoiceTableTop + (i + 1) * 30;
 
