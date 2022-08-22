@@ -2,35 +2,69 @@ const fs = require("fs");
 const PDFDocument = require("pdfkit");
 const { dataArray, ClientNamesR3T, newArray } = require("./usersDebts");
 
-function createInvoice(invoice, path) {
+function createInvoice(invoice, path, type) {
   let doc = new PDFDocument({ size: "A4", margin: 50 });
+  if (type === 0) {
+    for (let index = 0; index < dataArray.length; index++) {
+      if (dataArray[index].length < 11) {
+        let Clients = newArray.filter(
+          (el) => el.clientid === dataArray[index][0].clientid
+        );
+        let DeudaTotalxClient = Clients.reduce(
+          (a, b) => parseFloat(a) + parseFloat(b.amount_unpaid),
+          0
+        );
+        if (index !== 0) {
+          doc.addPage();
+        }
+        generateHeader(doc);
+        generateCustomerInformation(
+          doc,
+          invoice,
+          ClientNamesR3T[index],
+          dataArray[index],
+          DeudaTotalxClient
+        );
+        generateInvoiceTable(doc, invoice, index, DeudaTotalxClient);
+        generateFooter(doc);
 
-  for (let index = 0; index < dataArray.length; index++) {
-    let Clients = newArray.filter(
-      (el) => el.clientid === dataArray[index][0].clientid
-    );
-    let DeudaTotalxClient = Clients.reduce(
-      (a, b) => parseFloat(a) + parseFloat(b.amount_unpaid),
-      0
-    );
-
-    if (index !== 0) {
-      doc.addPage();
+        generateCustomerInformationUnderTable(doc);
+      }
     }
-    generateHeader(doc);
-    generateCustomerInformation(
-      doc,
-      invoice,
-      ClientNamesR3T[index],
-      dataArray[index],
-      DeudaTotalxClient
-    );
-    generateInvoiceTable(doc, invoice, index, DeudaTotalxClient);
-    generateFooter(doc);
-
-    generateCustomerInformationUnderTable(doc);
   }
 
+  if (type === 1) {
+    let contador = 0;
+    for (let index = 0; index < dataArray.length; index++) {
+      if (dataArray[index].length > 10) {
+        contador++;
+        console.log(contador);
+        let Clients = newArray.filter(
+          (el) => el.clientid === dataArray[index][0].clientid
+        );
+        let DeudaTotalxClient = Clients.reduce(
+          (a, b) => parseFloat(a) + parseFloat(b.amount_unpaid),
+          0
+        );
+
+        if (contador !== 1) {
+          doc.addPage();
+        }
+        generateHeader(doc);
+        generateCustomerInformation(
+          doc,
+          invoice,
+          ClientNamesR3T[index],
+          dataArray[index],
+          DeudaTotalxClient
+        );
+        generateInvoiceTable(doc, invoice, index, DeudaTotalxClient);
+        generateFooter(doc);
+
+        generateCustomerInformationUnderTable(doc);
+      }
+    }
+  }
   doc.end();
   doc.pipe(fs.createWriteStream(path));
 }
@@ -47,16 +81,17 @@ function generateCustomerInformation(
   DeudaTotalxClient
 ) {
   doc.fillColor("#000000").fontSize(11).text(formatDate(), 50, 130);
-  doc.fillColor("#000000").fontSize(11).text(ClientData[0], 50, 150);
+  doc.fillColor("#000000").fontSize(11).text(ClientData[0], 50, 145);
   doc
     .fillColor("#000000")
     .fontSize(11)
     .text(
       `Dirección Postal: ${ClientData[1]}, Ciudad:${ClientData[2]}, Estado:${ClientData[3]}, Zip: ${ClientData[4]}`,
       50,
-      170
+      160
     );
-  doc.fillColor("#000000").fontSize(11).text("Estimado cliente,", 50, 190);
+
+  doc.fillColor("#000000").fontSize(11).text("Estimado cliente,", 50, 185);
   doc
     .fillColor("#000000")
     .fontSize(11)
@@ -95,6 +130,7 @@ function generateInvoiceTable(doc, invoice, index1, DeudaTotalxClient) {
   doc.font("Helvetica");
 
   dataArray[index1].forEach((element, index2) => {
+    // console.log(dataArray[index1].length);
     const { Invoice, dateSent, amount_unpaid } = element;
     const position = invoiceTableTop + (i + 1) * 30;
     generateTableRow(
@@ -144,7 +180,7 @@ function generateCustomerInformationUnderTable(doc, invoice) {
     .fontSize(11)
     .text("OSNET Wireless Corporation", 50)
     .moveDown();
-
+  generateFooter(doc);
   // generateHr(doc, 185);
 }
 

@@ -38,4 +38,6 @@ const invoice = {
   invoice_nr: 1234,
 };
 // console.log(test);
-createInvoice(invoice, "invoice.pdf");
+createInvoice(invoice, "invoice.pdf", 0);
+
+createInvoice(invoice, "SecondInvoice.pdf", 1);
