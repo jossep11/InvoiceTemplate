@@ -3,7 +3,7 @@ const { posix } = require("path");
 const PDFDocument = require("pdfkit");
 const { dataArray, ClientNamesR3T, newArray } = require("./usersDebts");
 
-function createInvoice(invoice, path, type) {
+function createInvoice(path, type) {
   let doc = new PDFDocument({ size: "A4", margin: 50 });
   // Invoices menores a 9
   if (type === 0) {
@@ -23,12 +23,12 @@ function createInvoice(invoice, path, type) {
         generateHeader(doc);
         generateCustomerInformation(
           doc,
-          invoice,
+
           ClientNamesR3T[index],
           dataArray[index],
           DeudaTotalxClient
         );
-        generateInvoiceTable(doc, invoice, index, DeudaTotalxClient);
+        generateInvoiceTable(doc, index, DeudaTotalxClient);
         generateFooter(doc);
 
         generateCustomerInformationUnderTable(doc, ArraySize);
@@ -58,12 +58,12 @@ function createInvoice(invoice, path, type) {
         generateFooter(doc);
         generateCustomerInformation(
           doc,
-          invoice,
+
           ClientNamesR3T[index],
           dataArray[index],
           DeudaTotalxClient
         );
-        generateInvoiceTable(doc, invoice, index, DeudaTotalxClient);
+        generateInvoiceTable(doc, index, DeudaTotalxClient);
 
         generateCustomerInformationUnderTable(doc, dataArray[index].length);
         generateFooter(doc);
@@ -83,7 +83,7 @@ function generateHeader(doc) {
 // General info
 function generateCustomerInformation(
   doc,
-  invoice,
+
   ClientData,
   dataArray,
   DeudaTotalxClient
@@ -150,7 +150,7 @@ function generateCustomerInformation(
 }
 
 // General table
-function generateInvoiceTable(doc, invoice, index1, DeudaTotalxClient) {
+function generateInvoiceTable(doc, index1, DeudaTotalxClient) {
   let i = 0;
   let invoiceTableTop = 380;
 
@@ -166,19 +166,16 @@ function generateInvoiceTable(doc, invoice, index1, DeudaTotalxClient) {
   generateHr(doc, invoiceTableTop + 20);
   doc.font("Helvetica");
 
-  dataArray[index1].forEach((element, index2) => {
-    // console.log(dataArray[index1].length);
+  dataArray[index1].forEach((element) => {
     const { Invoice, dateSent, amount_unpaid } = element;
 
     let position = invoiceTableTop + (i + 1) * 30;
     if (position === 740) {
       doc.addPage();
-      // generateHeader(doc);
       i = 0;
       invoiceTableTop = 70;
       position = 100;
     }
-    // console.log(position, " ", invoiceTableTop);
     generateTableRow(
       doc,
       position,
@@ -206,6 +203,7 @@ function generateInvoiceTable(doc, invoice, index1, DeudaTotalxClient) {
   doc.font("Helvetica").moveDown();
 }
 
+// Info
 function generateCustomerInformationUnderTable(doc, ArraySize) {
   doc
     .fillColor("#000000")
@@ -244,12 +242,17 @@ function generateTableRow(
     .text(lineTotal, 0, y, { with: 10, align: "right" });
 }
 
+// Salto de linea subrayado
 function generateHr(doc, y) {
   doc.strokeColor("#aaaaaa").lineWidth(1).moveTo(50, y).lineTo(550, y).stroke();
 }
+
+// Footer
 function generateFooter(doc) {
   doc.image("img_footer.png", 0, 702, { width: 600 });
 }
+
+// Formato de moneda
 function formatCurrency(value) {
   return "$" + value.toFixed(2);
 }
