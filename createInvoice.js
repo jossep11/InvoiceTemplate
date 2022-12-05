@@ -1,22 +1,18 @@
 const fs = require("fs");
 const { posix } = require("path");
 const PDFDocument = require("pdfkit");
-const { dataArray, ClientNamesR3T, newArray } = require("./usersDebts");
-
-function createInvoice(path, type) {
-  let doc = new PDFDocument({ size: "A4", margin: 50 });
-  // Invoices menores a 9
+// const { DataRR3T, ClientNamesR3T, AllData } = require("./usersDebts");
+// const { DataCR3T } = require("./usersDebts");
+// console.log(DataRR3T);
+function createInvoice(path, type, DataRR3T, ClientNamesR3T, AllData) {
+  let doc = new PDFDocument({ size: [612, 792], margin: 50 });
+  // Invoices menores a 8
   if (type === 0) {
-    for (let index = 0; index < dataArray.length; index++) {
-      let ArraySize = dataArray[index].length;
-      if (ArraySize < 10) {
-        let Clients = newArray.filter(
-          (el) => el.clientid === dataArray[index][0].clientid
-        );
-        let DeudaTotalxClient = Clients.reduce(
-          (a, b) => parseFloat(a) + parseFloat(b.amount_unpaid),
-          0
-        );
+    for (let index = 0; index < DataRR3T.length; index++) {
+      let ArraySize = DataRR3T[index].length;
+      if (ArraySize < 8) {
+        let Clients = AllData.filter((el) => el.clientid === DataRR3T[index][0].clientid);
+        let DeudaTotalxClient = Clients.reduce((a, b) => parseFloat(a) + parseFloat(b.amount_unpaid), 0);
         if (index !== 0) {
           doc.addPage();
         }
@@ -25,10 +21,10 @@ function createInvoice(path, type) {
           doc,
 
           ClientNamesR3T[index],
-          dataArray[index],
+          DataRR3T[index],
           DeudaTotalxClient
         );
-        generateInvoiceTable(doc, index, DeudaTotalxClient);
+        generateInvoiceTable(doc, index, DeudaTotalxClient, DataRR3T);
         generateFooter(doc);
 
         generateCustomerInformationUnderTable(doc, ArraySize);
@@ -36,20 +32,15 @@ function createInvoice(path, type) {
     }
   }
 
-  // Invoices mayor a mayor a 8
+  // Invoices mayor a mayor a 7
   if (type === 1) {
     let contador = 0;
-    for (let index = 0; index < dataArray.length; index++) {
-      let ArraySize = dataArray[index].length;
-      if (ArraySize > 9) {
+    for (let index = 0; index < DataRR3T.length; index++) {
+      let ArraySize = DataRR3T[index].length;
+      if (ArraySize > 7) {
         contador++;
-        let Clients = newArray.filter(
-          (el) => el.clientid === dataArray[index][0].clientid
-        );
-        let DeudaTotalxClient = Clients.reduce(
-          (a, b) => parseFloat(a) + parseFloat(b.amount_unpaid),
-          0
-        );
+        let Clients = AllData.filter((el) => el.clientid === DataRR3T[index][0].clientid);
+        let DeudaTotalxClient = Clients.reduce((a, b) => parseFloat(a) + parseFloat(b.amount_unpaid), 0);
 
         if (contador !== 1) {
           doc.addPage();
@@ -60,12 +51,12 @@ function createInvoice(path, type) {
           doc,
 
           ClientNamesR3T[index],
-          dataArray[index],
+          DataRR3T[index],
           DeudaTotalxClient
         );
-        generateInvoiceTable(doc, index, DeudaTotalxClient);
+        generateInvoiceTable(doc, index, DeudaTotalxClient, DataRR3T);
 
-        generateCustomerInformationUnderTable(doc, dataArray[index].length);
+        generateCustomerInformationUnderTable(doc, DataRR3T[index].length);
         generateFooter(doc);
       }
     }
@@ -77,27 +68,18 @@ function createInvoice(path, type) {
 
 // Header img
 function generateHeader(doc) {
-  doc.image("img_header.png", 50, 45, { width: 550 }).moveDown();
+  doc.image("img_header.png", 50, 45, { width: 565 }).moveDown();
 }
 
 // General info
-function generateCustomerInformation(
-  doc,
-
-  ClientData,
-  dataArray,
-  DeudaTotalxClient
-) {
+function generateCustomerInformation(doc, ClientData, dataArray, DeudaTotalxClient) {
   let CustomerInfoPosition = 130;
-  doc
-    .fillColor("#000000")
-    .fontSize(11)
-    .text(formatDate(), 50, CustomerInfoPosition);
+  doc.fillColor("#000000").fontSize(11).text(formatDate(), 50, CustomerInfoPosition);
 
   doc
     .fillColor("#000000")
     .fontSize(11)
-    .text(ClientData[0], 50, CustomerInfoPosition + 30);
+    .text(ClientData[0] + ": " + ClientData[5], 50, CustomerInfoPosition + 30);
 
   doc
     .fillColor("#000000")
@@ -107,28 +89,15 @@ function generateCustomerInformation(
   doc
     .fillColor("#000000")
     .fontSize(11)
-    .text(
-      `${ClientData[2]}, ${ClientData[3]} ${ClientData[4]}`,
-      50,
-      CustomerInfoPosition + 58
-    )
+    .text(`${ClientData[2]}, ${ClientData[3]} ${ClientData[4]}`, 50, CustomerInfoPosition + 58)
     .moveDown();
+
+  doc.fillColor("#000000").fontSize(11).text("Estimado cliente,", 50).moveDown();
 
   doc
     .fillColor("#000000")
     .fontSize(11)
-    .text("Estimado cliente,", 50)
-    .moveDown();
-
-  doc
-    .fillColor("#000000")
-    .fontSize(11)
-    .text(
-      `     Nuestro departamento de Finanzas le informa, que su cuenta se encuentra en un atraso de más de 30 días. Su balance en atraso es de $${DeudaTotalxClient.toFixed(
-        2
-      )}`,
-      50
-    )
+    .text(`     Nuestro departamento de Finanzas le informa, que su cuenta se encuentra en un atraso de más de 30 días. Su balance en atraso es de $${DeudaTotalxClient.toFixed(2)}`, 50)
     .moveDown();
   doc
     .fillColor("#000000")
@@ -138,52 +107,32 @@ function generateCustomerInformation(
     )
     .moveDown();
 
-  doc
-    .fillColor("#000000")
-    .fontSize(11)
-    .text(
-      "De no recibir el pago para esta fecha sus servicios permanecerán desconectados."
-    )
-    .moveDown();
+  doc.fillColor("#000000").fontSize(11).text("De no recibir el pago para esta fecha sus servicios permanecerán desconectados.").moveDown();
 
   const customerInformationTop = 200;
 }
 
 // General table
-function generateInvoiceTable(doc, index1, DeudaTotalxClient) {
+function generateInvoiceTable(doc, index1, DeudaTotalxClient, DataRR3T) {
   let i = 0;
   let invoiceTableTop = 380;
 
   doc.font("Helvetica-Bold");
-  generateTableRow(
-    doc,
-    invoiceTableTop,
-    "Invoice Number",
-    "Date Sent",
-    "Amount",
-    "Amount Outstanding"
-  );
+  generateTableRow(doc, invoiceTableTop, "Invoice Number", "Date Sent", "Amount", "Amount Outstanding");
   generateHr(doc, invoiceTableTop + 20);
   doc.font("Helvetica");
 
-  dataArray[index1].forEach((element) => {
+  DataRR3T[index1].forEach((element) => {
     const { Invoice, dateSent, amount_unpaid } = element;
 
     let position = invoiceTableTop + (i + 1) * 30;
-    if (position === 740) {
+    if (position === 680) {
       doc.addPage();
       i = 0;
       invoiceTableTop = 70;
       position = 100;
     }
-    generateTableRow(
-      doc,
-      position,
-      Invoice,
-      dateSent,
-      amount_unpaid,
-      amount_unpaid
-    );
+    generateTableRow(doc, position, Invoice, dateSent, amount_unpaid, amount_unpaid);
     generateHr(doc, position + 20);
 
     i++;
@@ -192,14 +141,7 @@ function generateInvoiceTable(doc, index1, DeudaTotalxClient) {
   const duePosition = invoiceTableTop + (i + 1) * 30;
   doc.font("Helvetica-Bold");
 
-  generateTableRow(
-    doc,
-    duePosition,
-    "",
-    "",
-    "Balance Due",
-    formatCurrency(DeudaTotalxClient)
-  );
+  generateTableRow(doc, duePosition, "", "", "Balance Due", formatCurrency(DeudaTotalxClient));
   doc.font("Helvetica").moveDown();
 }
 
@@ -213,13 +155,7 @@ function generateCustomerInformationUnderTable(doc, ArraySize) {
       50
     )
     .moveDown();
-  doc
-    .fillColor("#000000")
-    .fontSize(11)
-    .text(
-      "Si ya envió el pago, le pedimos disculpas por la molestia y le agradecemos su patrocinio.",
-      50
-    );
+  doc.fillColor("#000000").fontSize(11).text("Si ya envió el pago, le pedimos disculpas por la molestia y le agradecemos su patrocinio.", 50).moveDown();
   doc.fillColor("#000000").fontSize(11).text("OSNET Wireless Corporation", 50);
   // generateHr(doc, 185);
 }
@@ -244,12 +180,13 @@ function generateTableRow(
 
 // Salto de linea subrayado
 function generateHr(doc, y) {
-  doc.strokeColor("#aaaaaa").lineWidth(1).moveTo(50, y).lineTo(550, y).stroke();
+  doc.strokeColor("#aaaaaa").lineWidth(1).moveTo(50, y).lineTo(565, y).stroke();
 }
 
 // Footer
 function generateFooter(doc) {
-  doc.image("img_footer.png", 0, 702, { width: 600 });
+  // doc.image("img_footer.png", 0, 702, { width: 600 });
+  doc.image("img_footer.png", 0, 652, { width: 612 });
 }
 
 // Formato de moneda
