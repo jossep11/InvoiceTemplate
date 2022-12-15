@@ -69,7 +69,7 @@ Object.keys(timesRepeatedClientID).forEach((element, index) => {
         ClientidR3T.push(element);
 
         ClientNamesR3T.push([
-          Users.data[element2].full_name.trim() === "" ? Users.data[element2].company : Users.data[element2].full_name,
+          Users.data[element2].company.trim() === "" ? Users.data[element2].full_name : Users.data[element2].company,
           Users.data[element2].address,
           Users.data[element2].city,
           Users.data[element2].state,
@@ -80,7 +80,7 @@ Object.keys(timesRepeatedClientID).forEach((element, index) => {
       if (Residenciales === "Business" && element === Users.data[element2].clientid) {
         ClientidB_R3T.push(element);
         ClientNamesB_R3T.push([
-          Users.data[element2].full_name.trim() === "" ? Users.data[element2].company : Users.data[element2].full_name,
+          Users.data[element2].company.trim() === "" ? Users.data[element2].full_name : Users.data[element2].company,
           Users.data[element2].address,
           Users.data[element2].city,
           Users.data[element2].state,
@@ -91,7 +91,7 @@ Object.keys(timesRepeatedClientID).forEach((element, index) => {
       if (Residenciales === "NONE" && element === Users.data[element2].clientid) {
         ClientidNone_R3T.push(element);
         ClientNamesNone_R3T.push([
-          Users.data[element2].full_name.trim() === "" ? Users.data[element2].company : Users.data[element2].full_name,
+          Users.data[element2].company.trim() === "" ? Users.data[element2].full_name : Users.data[element2].company,
           Users.data[element2].address,
           Users.data[element2].city,
           Users.data[element2].state,
@@ -103,7 +103,8 @@ Object.keys(timesRepeatedClientID).forEach((element, index) => {
       if (Residenciales === "Business VIP" && element === Users.data[element2].clientid) {
         ClientidBV_R3T.push(element);
         ClientNamesBV_R3T.push([
-          Users.data[element2].full_name.trim() === "" ? Users.data[element2].company : Users.data[element2].full_name,
+          // Users.data[element2].full_name.trim() === "" ? Users.data[element2].company : Users.data[element2].full_name,
+          Users.data[element2].company.trim() === "" ? Users.data[element2].full_name : Users.data[element2].company,
           Users.data[element2].address,
           Users.data[element2].city,
           Users.data[element2].state,
@@ -115,7 +116,8 @@ Object.keys(timesRepeatedClientID).forEach((element, index) => {
       if (Residenciales === "Enterprise" && element === Users.data[element2].clientid) {
         ClientidE_R3T.push(element);
         ClientNamesE_R3T.push([
-          Users.data[element2].full_name.trim() === "" ? Users.data[element2].company : Users.data[element2].full_name,
+          // Users.data[element2].full_name.trim() === "" ? Users.data[element2].company : Users.data[element2].full_name,
+          Users.data[element2].company.trim() === "" ? Users.data[element2].full_name : Users.data[element2].company,
           Users.data[element2].address,
           Users.data[element2].city,
           Users.data[element2].state,
@@ -127,7 +129,8 @@ Object.keys(timesRepeatedClientID).forEach((element, index) => {
       if (Residenciales === "Wholesale" && element === Users.data[element2].clientid) {
         ClientidW_R3T.push(element);
         ClientNamesW_R3T.push([
-          Users.data[element2].full_name.trim() === "" ? Users.data[element2].company : Users.data[element2].full_name,
+          // Users.data[element2].full_name.trim() === "" ? Users.data[element2].company : Users.data[element2].full_name,
+          Users.data[element2].company.trim() === "" ? Users.data[element2].full_name : Users.data[element2].company,
           Users.data[element2].address,
           Users.data[element2].city,
           Users.data[element2].state,
@@ -139,7 +142,8 @@ Object.keys(timesRepeatedClientID).forEach((element, index) => {
       if (Residenciales === "Reseller" && element === Users.data[element2].clientid) {
         ClientidReseller_R3T.push(element);
         ClientNamesReseller_R3T.push([
-          Users.data[element2].full_name.trim() === "" ? Users.data[element2].company : Users.data[element2].full_name,
+          // Users.data[element2].full_name.trim() === "" ? Users.data[element2].company : Users.data[element2].full_name,
+          Users.data[element2].company.trim() === "" ? Users.data[element2].full_name : Users.data[element2].company,
           Users.data[element2].address,
           Users.data[element2].city,
           Users.data[element2].state,
