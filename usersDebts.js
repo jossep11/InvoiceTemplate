@@ -1,6 +1,6 @@
 const fs = require("fs");
-let rawData = fs.readFileSync("billings2yearsAgo.json");
-let userData = fs.readFileSync("users_active.json");
+let rawData = fs.readFileSync("billing0Response.json");
+let userData = fs.readFileSync("UsersResponse.json");
 let Users = JSON.parse(userData);
 let billing = JSON.parse(rawData);
 
