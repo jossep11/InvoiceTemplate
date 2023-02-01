@@ -1,36 +1,31 @@
 const fs = require("fs");
 const { posix } = require("path");
 const PDFDocument = require("pdfkit");
-const { SymbologyType, createStream, createFile } = require("symbology");
-
 // const { DataRR3T, ClientNamesR3T, AllData } = require("./usersDebts");
 // const { DataCR3T } = require("./usersDebts");
 // console.log(DataRR3T);
-async function createInvoice(path, type, DataRR3T, ClientNamesR3T, AllData, FolderName) {
+function createInvoice(path, type, DataRR3T, ClientNamesR3T, AllData) {
   let doc = new PDFDocument({ size: [612, 792], margin: 50 });
   // Invoices menores a 8
   if (type === 0) {
     for (let index = 0; index < DataRR3T.length; index++) {
       let ArraySize = DataRR3T[index].length;
-
-      const { data } = await createFile(
-        {
-          symbology: SymbologyType.CODE128,
-          fileName: `./${FolderName}/barcodes/${ClientNamesR3T[index][5]}.png`,
-        },
-        // ClientData[5]
-        ClientNamesR3T[index][5]
-      );
       if (ArraySize < 8) {
         let Clients = AllData.filter((el) => el.clientid === DataRR3T[index][0].clientid);
         let DeudaTotalxClient = Clients.reduce((a, b) => parseFloat(a) + parseFloat(b.amount_unpaid), 0);
         if (index !== 0) {
           doc.addPage();
         }
-        generateHeader(doc, ClientNamesR3T[index], FolderName);
-        generateCustomerInformation(doc, ClientNamesR3T[index], DataRR3T[index], DeudaTotalxClient, FolderName);
+        generateHeader(doc);
+        generateCustomerInformation(
+          doc,
+
+          ClientNamesR3T[index],
+          DataRR3T[index],
+          DeudaTotalxClient
+        );
         generateInvoiceTable(doc, index, DeudaTotalxClient, DataRR3T);
-        generateFooter(doc, ClientNamesR3T[index], FolderName);
+        generateFooter(doc);
 
         generateCustomerInformationUnderTable(doc, ArraySize);
       }
@@ -42,15 +37,6 @@ async function createInvoice(path, type, DataRR3T, ClientNamesR3T, AllData, Fold
     let contador = 0;
     for (let index = 0; index < DataRR3T.length; index++) {
       let ArraySize = DataRR3T[index].length;
-      const { data } = await createFile(
-        {
-          symbology: SymbologyType.CODE128,
-          fileName: `./${FolderName}/barcodes/${ClientNamesR3T[index][5]}.png`,
-        },
-        // ClientData[5]
-        ClientNamesR3T[index][5]
-      );
-
       if (ArraySize > 7) {
         contador++;
         let Clients = AllData.filter((el) => el.clientid === DataRR3T[index][0].clientid);
@@ -59,13 +45,19 @@ async function createInvoice(path, type, DataRR3T, ClientNamesR3T, AllData, Fold
         if (contador !== 1) {
           doc.addPage();
         }
-        generateHeader(doc, ClientNamesR3T[index], FolderName);
-        generateFooter(doc, ClientNamesR3T[index], FolderName);
-        generateCustomerInformation(doc, ClientNamesR3T[index], DataRR3T[index], DeudaTotalxClient, FolderName);
+        generateHeader(doc);
+        generateFooter(doc);
+        generateCustomerInformation(
+          doc,
+
+          ClientNamesR3T[index],
+          DataRR3T[index],
+          DeudaTotalxClient
+        );
         generateInvoiceTable(doc, index, DeudaTotalxClient, DataRR3T);
 
         generateCustomerInformationUnderTable(doc, DataRR3T[index].length);
-        generateFooter(doc, ClientNamesR3T[index], FolderName);
+        generateFooter(doc);
       }
     }
   }
@@ -75,31 +67,29 @@ async function createInvoice(path, type, DataRR3T, ClientNamesR3T, AllData, Fold
 }
 
 // Header img
-function generateHeader(doc, Client, FolderName) {
-  // console.log("epa revisa");
-  doc.image("img_header2.png", 50, 45, { width: 565 }).moveDown();
-  doc.image(`./${FolderName}/barcodes/${Client[5]}.png`, 485, 45, { width: 80 }).moveDown();
+function generateHeader(doc) {
+  doc.image("img_header.png", 50, 45, { width: 565 }).moveDown();
 }
 
 // General info
-function generateCustomerInformation(doc, ClientData, dataArray, DeudaTotalxClient, FolderName) {
-  let CustomerInfoPosition = 120;
+function generateCustomerInformation(doc, ClientData, dataArray, DeudaTotalxClient) {
+  let CustomerInfoPosition = 130;
   doc.fillColor("#000000").fontSize(11).text(formatDate(), 50, CustomerInfoPosition);
 
   doc
     .fillColor("#000000")
     .fontSize(11)
-    .text(ClientData[0] + ": " + ClientData[5], 50, CustomerInfoPosition + 20);
+    .text(ClientData[0] + ": " + ClientData[5], 50, CustomerInfoPosition + 30);
 
   doc
     .fillColor("#000000")
     .fontSize(11)
-    .text(`${ClientData[1]} `, 50, CustomerInfoPosition + 35);
+    .text(`${ClientData[1]} `, 50, CustomerInfoPosition + 45);
 
   doc
     .fillColor("#000000")
     .fontSize(11)
-    .text(`${ClientData[2]}, ${ClientData[3]} ${ClientData[4]}`, 50, CustomerInfoPosition + 48)
+    .text(`${ClientData[2]}, ${ClientData[3]} ${ClientData[4]}`, 50, CustomerInfoPosition + 58)
     .moveDown();
 
   doc.fillColor("#000000").fontSize(11).text("Estimado cliente,", 50).moveDown();
@@ -125,7 +115,7 @@ function generateCustomerInformation(doc, ClientData, dataArray, DeudaTotalxClie
 // General table
 function generateInvoiceTable(doc, index1, DeudaTotalxClient, DataRR3T) {
   let i = 0;
-  let invoiceTableTop = 350;
+  let invoiceTableTop = 380;
 
   doc.font("Helvetica-Bold");
   generateTableRow(doc, invoiceTableTop, "Invoice Number", "Date Sent", "Amount", "Amount Outstanding");
@@ -139,8 +129,8 @@ function generateInvoiceTable(doc, index1, DeudaTotalxClient, DataRR3T) {
     if (position === 680) {
       doc.addPage();
       i = 0;
-      invoiceTableTop = 120;
-      position = 150;
+      invoiceTableTop = 70;
+      position = 100;
     }
     generateTableRow(doc, position, Invoice, dateSent, amount_unpaid, amount_unpaid);
     generateHr(doc, position + 20);
@@ -194,13 +184,8 @@ function generateHr(doc, y) {
 }
 
 // Footer
-function generateFooter(doc, Client, FolderName) {
+function generateFooter(doc) {
   // doc.image("img_footer.png", 0, 702, { width: 600 });
-  // doc.image("img_header2.png", 50, 45, { width: 565 }).moveDown();
-  if (doc.y > 50) {
-    // generateHeader(doc, Client, FolderName);
-    doc.image(`./${FolderName}/barcodes/${Client[5]}.png`, 485, 45, { width: 80 }).moveDown();
-  }
   doc.image("img_footer.png", 0, 652, { width: 612 });
 }
 
